@@ -3,7 +3,10 @@ import path from "path";
 
 const allowedExtensions = [".pdf", ".jpeg", ".png", ".svg", ".webp"];
 
-function addCertificateValidation(data: unknown) {
+function addCertificateValidation(data: {
+  files: Express.Multer.File[];
+  supplierId: string;
+}) {
   const fileSchema = Joi.custom((value, helpers) => {
     const fileExt = path.extname(value.originalname);
     if (!allowedExtensions.includes(fileExt)) {
