@@ -1,20 +1,22 @@
-import express from "express";
+import express, { NextFunction, Response, Request } from "express";
 import cors from "cors";
 import router from "./routes/index.js";
 import mongoose from "mongoose";
+import * as dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
 
 process.on("warning", (e) => console.warn(e.stack));
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: "*",
     methods: "GET,POST,PUT,DELETE",
   })
 );
 app.use(express.json());
 app.use(express.static("public"));
-app.use(express.urlencoded({ extended: true }));
+// app.use(express.urlencoded({ extended: true }));
 app.use("/api", router);
 
 const start = async () => {
