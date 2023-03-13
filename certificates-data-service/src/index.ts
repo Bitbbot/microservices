@@ -1,4 +1,4 @@
-import express, { NextFunction, Response, Request } from "express";
+import express from "express";
 import cors from "cors";
 import router from "./routes/index.js";
 import mongoose from "mongoose";
@@ -16,7 +16,7 @@ app.use(
 );
 app.use(express.json());
 app.use(express.static("public"));
-// app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 app.use("/api", router);
 
 const start = async () => {

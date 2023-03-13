@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import certificateService from "../services/certificate.service.js";
 
 class CertificateController {
-  async add(req: Request, res: Response, next: NextFunction) {
+  async add(req: Request, res: Response) {
     try {
       const files = req.files as Express.Multer.File[];
       const supplierId = req.body.supplierId;
@@ -15,7 +15,7 @@ class CertificateController {
     }
   }
 
-  async delete(req: Request, res: Response, next: NextFunction) {
+  async delete(req: Request, res: Response) {
     try {
       const files = req.body.files.map((el: { id: string }) => el.id);
       const supplierId = req.body.supplierId;
@@ -26,7 +26,7 @@ class CertificateController {
       return res.status(500).json({ error });
     }
   }
-  async getAllNames(req: Request, res: Response, next: NextFunction) {
+  async getAllNames(req: Request, res: Response) {
     try {
       const supplierId = req.body.supplierId;
 

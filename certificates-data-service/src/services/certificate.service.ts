@@ -21,8 +21,6 @@ class CertificateService {
   async getAllFiles(supplierId: string) {
     return File.find({ supplierId });
   }
-
-  // async
 }
 
 export default new CertificateService();
