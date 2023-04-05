@@ -9,7 +9,6 @@ import {
   Post,
   UsePipes,
   ValidationPipe,
-  Headers,
 } from '@nestjs/common';
 import { SupplierDto } from './dtos/supplier.dto';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -18,7 +17,6 @@ import { GetSupplierQuery } from './queries/impl/get-supplier.query';
 import { GetSuppliersQuery } from './queries/impl/get-suppliers.query';
 import { DeleteSupplierCommand } from './commands/impl/delete-supplier.command';
 import { UpdateSupplierCommand } from './commands/impl/update-supplier.command';
-import { EventRepository } from './repository/events.repository';
 import { TraceId } from './decorators/trace-id.decorator';
 
 @Controller('suppliers')
@@ -26,21 +24,17 @@ export class SuppliersController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
-    private readonly repository: EventRepository,
   ) {}
 
   @Get()
-  findAll():Promise<SupplierInterface[]> {
+  findAll(): Promise<SupplierInterface[]> {
     return this.queryBus.execute(new GetSuppliersQuery());
   }
 
-  @Get('/events')
-  async findEvents() {
-    return this.repository.getEvents();
-  }
-
   @Get(':id')
-  async findOne(@Param('id', ParseUUIDPipe) id: string):Promise<SupplierInterface> {
+  async findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<SupplierInterface> {
     return this.queryBus.execute(new GetSupplierQuery(id));
   }
 

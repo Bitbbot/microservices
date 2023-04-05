@@ -1,6 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetSuppliersQuery } from '../impl/get-suppliers.query';
-import { SupplierRepository } from '../../repository/supplier.repository';
+import { SupplierRepository } from '../../repositories/supplier.repository';
 
 @QueryHandler(GetSuppliersQuery)
 export class GetSuppliersHandler implements IQueryHandler<GetSuppliersQuery> {

@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Event } from './suppliers/entities/events/event.entity';
+import { Event } from './events/entities/events/event.entity';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { Supplier } from './suppliers/entities/queries/supplier.entity';
 import { Sector } from './suppliers/entities/queries/sector.entity';
 import { Role } from './suppliers/entities/queries/role.entity';
+import { EventsModule } from './events/events.module';
 
 const defaultOptions = () => {
   return {
@@ -36,6 +37,7 @@ const defaultOptions = () => {
       entities: [Supplier, Sector, Role],
     }),
     SuppliersModule,
+    EventsModule,
   ],
 })
 export class AppModule {}

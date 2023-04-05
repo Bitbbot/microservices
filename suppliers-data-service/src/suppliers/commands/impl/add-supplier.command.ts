@@ -1,3 +1,3 @@
-import { BaseSupplier } from '../../interfaces/base-supplier';
+import { BaseSupplier } from '../../../shared/interfaces/base-supplier';
 
 export class AddSupplierCommand extends BaseSupplier {}

@@ -1,6 +1,6 @@
 import { CommandHandler, EventPublisher, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateSupplierCommand } from '../impl/update-supplier.command';
-import { SupplierRepository } from '../../repository/supplier.repository';
+import { SupplierRepository } from '../../repositories/supplier.repository';
 import { Supplier } from '../../models/supplier.model';
 import { HttpException, HttpStatus } from '@nestjs/common';
 

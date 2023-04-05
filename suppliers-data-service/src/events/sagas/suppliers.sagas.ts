@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ofType, Saga } from '@nestjs/cqrs';
 import { map, Observable } from 'rxjs';
 import { AddSupplierEvent } from '../events/impl/add-supplier.event';
-import { EventRepository } from '../repository/events.repository';
+import { EventRepository } from '../repositories/events.repository';
 import { UpdateSupplierEvent } from '../events/impl/update-supplier.event';
 import { DeleteSupplierEvent } from '../events/impl/delete-supplier.event';
 
