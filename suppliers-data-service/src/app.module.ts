@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
 import { Event } from './events/entities/events/event.entity';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { Supplier } from './suppliers/entities/queries/supplier.entity';
@@ -35,6 +37,14 @@ const defaultOptions = () => {
       type: 'postgres',
       name: 'queries',
       entities: [Supplier, Sector, Role],
+    }),
+    WinstonModule.forRoot({
+      level: 'info',
+      format: winston.format.json(),
+      transports: [
+        new winston.transports.File({ filename: 'error.log', level: 'error' }),
+        new winston.transports.File({ filename: 'combined.log' }),
+      ],
     }),
     SuppliersModule,
     EventsModule,

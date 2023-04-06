@@ -3,10 +3,12 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -18,16 +20,23 @@ import { GetSuppliersQuery } from './queries/impl/get-suppliers.query';
 import { DeleteSupplierCommand } from './commands/impl/delete-supplier.command';
 import { UpdateSupplierCommand } from './commands/impl/update-supplier.command';
 import { TraceId } from './decorators/trace-id.decorator';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { AuthGuards } from './guards/auth.guards';
 
 @Controller('suppliers')
+@UseGuards(AuthGuards)
 export class SuppliersController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: Logger,
   ) {}
 
   @Get()
   findAll(): Promise<SupplierInterface[]> {
+    this.logger.log('getAllSuppliers', SuppliersController.name);
     return this.queryBus.execute(new GetSuppliersQuery());
   }
 
@@ -35,12 +44,17 @@ export class SuppliersController {
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<SupplierInterface> {
+    this.logger.log(`getOneSupplier {id:${id}}`, SuppliersController.name);
     return this.queryBus.execute(new GetSupplierQuery(id));
   }
 
   @Post()
   @UsePipes(new ValidationPipe({ transform: true }))
   async create(@Body() supplierDto: SupplierDto, @TraceId() traceId: string) {
+    this.logger.log(
+      `getOneSupplier {supplier:${JSON.stringify(supplierDto)}}`,
+      SuppliersController.name,
+    );
     return this.commandBus.execute(
       new AddSupplierCommand(
         supplierDto.id,
