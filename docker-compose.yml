@@ -1,0 +1,38 @@
+version: "2.15.1"
+services:
+  api:
+#    image: paul/sds
+    build:
+      dockerfile: Dockerfile
+      context: ./suppliers-data-service
+    depends_on:
+      - events
+      - queries
+    environment:
+      POSTGRES_HOST: host.docker.internal
+      SUPPLIERS_DATA_SERVICE_PORT: 3000
+      POSTGRES_EVENTS_PORT: 5433
+      POSTGRES_QUERIES_PORT: 5434
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      SUPPLIERS_DATA_SERVICE_LOGIN: DATAservLogin
+      SUPPLIERS_DATA_SERVICE_PASSWORD: DATAservpassword
+    ports:
+      - "3007:3000"
+  events:
+    image: postgres:latest
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: events
+  queries:
+    image: postgres:latest
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: queries
+
