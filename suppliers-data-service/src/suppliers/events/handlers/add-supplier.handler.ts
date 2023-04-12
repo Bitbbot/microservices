@@ -1,6 +1,6 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { AddSupplierEvent } from '../impl/add-supplier.event';
-import { SupplierRepository } from '../../../suppliers/repositories/supplier.repository';
+import { SupplierRepository } from '../../repositories/supplier.repository';
 
 @EventsHandler(AddSupplierEvent)
 export class AddSupplierHandler implements IEventHandler<AddSupplierEvent> {

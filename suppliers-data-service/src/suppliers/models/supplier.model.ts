@@ -1,7 +1,7 @@
 import { AggregateRoot } from '@nestjs/cqrs';
-import { AddSupplierEvent } from '../../events/events/impl/add-supplier.event';
-import { DeleteSupplierEvent } from '../../events/events/impl/delete-supplier.event';
-import { UpdateSupplierEvent } from '../../events/events/impl/update-supplier.event';
+import { AddSupplierEvent } from '../events/impl/add-supplier.event';
+import { DeleteSupplierEvent } from '../events/impl/delete-supplier.event';
+import { UpdateSupplierEvent } from '../events/impl/update-supplier.event';
 
 export class Supplier extends AggregateRoot {
   constructor(

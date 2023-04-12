@@ -7,6 +7,7 @@ import { Supplier } from './entities/queries/supplier.entity';
 import { CqrsModule } from '@nestjs/cqrs';
 import { SupplierRepository } from './repositories/supplier.repository';
 import { EventsModule } from '../events/events.module';
+import { EventHandlers } from './events/handlers';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { EventsModule } from '../events/events.module';
     forwardRef(() => EventsModule),
   ],
   controllers: [SuppliersController],
-  providers: [SupplierRepository],
+  providers: [SupplierRepository, ...EventHandlers],
   exports: [SupplierRepository],
 })
 export class SuppliersModule {}

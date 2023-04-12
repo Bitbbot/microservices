@@ -1,5 +1,5 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { SupplierRepository } from '../../../suppliers/repositories/supplier.repository';
+import { SupplierRepository } from '../../repositories/supplier.repository';
 import { DeleteSupplierEvent } from '../impl/delete-supplier.event';
 
 @EventsHandler(DeleteSupplierEvent)
