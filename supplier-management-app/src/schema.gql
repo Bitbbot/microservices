@@ -1,0 +1,51 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreateSupplierInput {
+  certificates: [Upload!] = []
+  country: String!
+  name: String!
+  roles: [String!] = []
+  sectors: [String!] = []
+  vatNumber: Int
+}
+
+type IResponse {
+  message: String
+  status: ID!
+}
+
+type Mutation {
+  createSupplier(createSupplierInput: CreateSupplierInput!): IResponse!
+  removeSupplier(id: Int!): Supplier!
+  updateSupplier(updateSupplierInput: UpdateSupplierInput!): Supplier!
+}
+
+type Query {
+  supplier(id: Int!): Supplier!
+  suppliers: [Supplier!]!
+}
+
+type Supplier {
+  certificates: [String!]
+  country: String!
+  id: ID!
+  name: String!
+  roles: [String!]
+  sectors: [String!]
+  vatNumber: Int
+}
+
+input UpdateSupplierInput {
+  certificates: [Upload!] = []
+  country: String
+  id: ID!
+  name: String
+  roles: [String!] = []
+  sectors: [String!] = []
+  vatNumber: Int
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
