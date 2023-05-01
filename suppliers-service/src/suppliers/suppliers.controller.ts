@@ -1,23 +1,20 @@
-import { Controller, Logger } from '@nestjs/common';
-import { GrpcMethod, MessagePattern } from '@nestjs/microservices';
+import { Controller } from '@nestjs/common';
+import { GrpcMethod } from '@nestjs/microservices';
 import { SuppliersService } from './suppliers.service';
-
-interface INumberArray {
-  data: number[];
-}
-interface ISumOfNumberArray {
-  sum: number;
-}
+import { Readable } from 'stream';
+import { SupplierRequest } from './interfaces/supplier-request.interface';
+import { Result } from './interfaces/result.interface';
 
 @Controller()
 export class SuppliersController {
-  private logger = new Logger('AppController');
   constructor(private readonly suppliersService: SuppliersService) {}
 
-  @GrpcMethod('SupplierService', 'Accumulate')
-  accumulate(numberArray: INumberArray, metadata: any): ISumOfNumberArray {
-    console.log('k');
-    this.logger.log('Adding ' + numberArray.toString());
-    return { sum: this.suppliersService.accumulate(numberArray.data) };
-  } //
+  @GrpcMethod('SupplierService', 'CreateSupplier')
+  createSupplier(data: SupplierRequest): Result {
+    // Here you can process the received data, for example, save it to a database or a file
+    console.log(data);
+    // console.log('here');
+    // Return the response to the client
+    return this.suppliersService.addCertificate(data);
+  }
 }
