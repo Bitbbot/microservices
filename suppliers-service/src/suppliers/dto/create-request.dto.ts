@@ -1,4 +1,4 @@
-export interface SupplierRequest {
+export interface CreateSupplierDto {
   id: string;
   country: string;
   name: string;

@@ -29,7 +29,7 @@ class CertificateController {
   }
   async getAllNames(req: Request, res: Response) {
     try {
-      const supplierId = req.body.supplierId;
+      const supplierId = req.query.supplierId as string;
 
       const files = await certificateService.getAllFiles(supplierId);
       const names = files.map((file) => {

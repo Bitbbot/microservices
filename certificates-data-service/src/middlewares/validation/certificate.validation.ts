@@ -56,7 +56,7 @@ class CertificateValidation {
   }
 
   getAllNames(req: Request, res: Response, next: NextFunction) {
-    const supplierId = req.body.supplierId;
+    const supplierId = req.query.supplierId as string;
 
     const Schema = Joi.string().min(1).required();
     const { error } = Schema.validate(supplierId);

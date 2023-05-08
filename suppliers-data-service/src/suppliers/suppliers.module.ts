@@ -14,9 +14,10 @@ import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      envFilePath: '.env',
-    }),
+    // ConfigModule.forRoot({
+    //   envFilePath: '.env',
+    // }),
+    // ConfigModule,
     CqrsModule,
     TypeOrmModule.forFeature([Role, Sector, Supplier], 'queries'),
     forwardRef(() => EventsModule),

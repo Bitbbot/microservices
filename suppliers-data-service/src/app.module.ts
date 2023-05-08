@@ -23,6 +23,7 @@ const defaultOptions = () => {
   imports: [
     ConfigModule.forRoot({
       envFilePath: '.env',
+      isGlobal: true,
     }),
     TypeOrmModule.forRoot({
       ...defaultOptions(),

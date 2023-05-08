@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { SupplierRequest } from './interfaces/supplier-request.interface';
+import { CreateSupplierDto } from './dto/create-request.dto';
 const FormData = require('form-data');
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import { GetSupplierDto } from './dto/get-request.dto';
 
 @Injectable()
 export class SuppliersService {
-  async createSupplier(data: SupplierRequest): Promise<{
+  async createSupplier(data: CreateSupplierDto): Promise<{
     status: number;
     message: string;
   }> {
@@ -87,5 +88,89 @@ export class SuppliersService {
     return { status: suppRes.status, message: suppRes.message };
   }
 
-  async getSupplier(data: { id: string }): Promise<any> {}
+  async getSupplier(data: GetSupplierDto): Promise<any> {
+    const suppRes = await axios
+      .get(`${process.env.SUPPLIERS_DATA_SERVICE_URL}suppliers/${data.id}`, {
+        headers: {
+          login: process.env.SUPPLIERS_DATA_SERVICE_LOGIN,
+          password: process.env.SUPPLIERS_DATA_SERVICE_PASSWORD,
+        },
+      })
+      .then((response) => {
+        return { ...response.data, error: false };
+      })
+      .catch((error) => {
+        return { error: true };
+      });
+    if (suppRes.error === true) return {};
+
+    const certRes = await axios.get(
+      `${process.env.CERTIFICATE_DATA_SERVICE_URL}api/certificate/getAllNames?supplierId=${data.id}`,
+      {
+        headers: {
+          login: process.env.CERTIFICATE_DATA_SERVICE_LOGIN,
+          password: process.env.CERTIFICATE_DATA_SERVICE_PASSWORD,
+        },
+      },
+    );
+    suppRes.certificates = JSON.parse(certRes.data).map((cert) => {
+      return { fileName: cert.fileName, fileId: cert.fileId };
+    });
+    return suppRes;
+  }
+
+  async getSuppliers() {
+    const suppRes = await axios
+      .get(`${process.env.SUPPLIERS_DATA_SERVICE_URL}suppliers/`, {
+        headers: {
+          login: process.env.SUPPLIERS_DATA_SERVICE_LOGIN,
+          password: process.env.SUPPLIERS_DATA_SERVICE_PASSWORD,
+        },
+      })
+      .then((response) => {
+        return { data: response.data, error: false };
+      })
+      .catch((error) => {
+        return { data: '', error: true };
+      });
+
+    if (suppRes.error === true) return {};
+    const suppliers = suppRes.data.map((supplier) => {
+      return {
+        ...supplier,
+        roles: supplier.roles.map((role) => {
+          return role.role;
+        }),
+        sectors: supplier.sectors.map((sector) => {
+          return sector.sector;
+        }),
+      };
+    });
+
+    async function getSuppliersWithCertificates(suppliers) {
+      const promises = suppliers.map(async (supplier) => {
+        const certificates = await axios.get(
+          `${process.env.CERTIFICATE_DATA_SERVICE_URL}api/certificate/getAllNames?supplierId=${supplier.id}`,
+          {
+            headers: {
+              login: process.env.CERTIFICATE_DATA_SERVICE_LOGIN,
+              password: process.env.CERTIFICATE_DATA_SERVICE_PASSWORD,
+            },
+          },
+        );
+        return {
+          certificates: JSON.parse(certificates.data).map((certificate) => {
+            return {
+              fileName: certificate.fileName,
+              fileId: certificate.fileId,
+            };
+          }),
+          ...supplier,
+        };
+      });
+      return await Promise.all(promises);
+    }
+    const supps = await getSuppliersWithCertificates(suppliers);
+    return { suppliers: supps };
+  }
 }

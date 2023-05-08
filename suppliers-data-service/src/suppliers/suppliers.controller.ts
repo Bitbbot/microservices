@@ -47,6 +47,7 @@ export class SuppliersController {
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<SupplierInterface> {
+    console.log('get');
     this.logger.log(`getOneSupplier {id:${id}}`, SuppliersController.name);
     return this.queryBus.execute(new GetSupplierQuery(id));
   }
