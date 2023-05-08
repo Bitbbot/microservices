@@ -22,7 +22,7 @@ const defaultOptions = () => {
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.local.env',
+      envFilePath: '.env',
     }),
     TypeOrmModule.forRoot({
       ...defaultOptions(),

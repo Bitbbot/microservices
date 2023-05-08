@@ -10,9 +10,13 @@ import { EventsModule } from '../events/events.module';
 import { EventHandlers } from './events/handlers';
 import { ResponseStatusInterceptor } from './interceptors/createSupplier.status.interceptor';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: '.env',
+    }),
     CqrsModule,
     TypeOrmModule.forFeature([Role, Sector, Supplier], 'queries'),
     forwardRef(() => EventsModule),
@@ -22,11 +26,11 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: '1',
-            brokers: ['localhost:29092'],
+            clientId: process.env.KAFKA_CLIENT_ID,
+            brokers: [`${process.env.BROKER_URL}`],
           },
           consumer: {
-            groupId: '1',
+            groupId: `${process.env.KAFKA_CONSUMER_GROUP_ID}`,
           },
         },
       },

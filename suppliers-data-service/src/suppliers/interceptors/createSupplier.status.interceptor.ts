@@ -18,6 +18,7 @@ export class ResponseStatusInterceptor implements NestInterceptor {
     const httpContext = context.switchToHttp();
     const request = httpContext.getRequest();
     const body = request.body;
+    console.log(process.env.BROKER_URL);
     if (body.fileIds.length > 0)
       this.client.emit<number>('delete_certificate', {
         supplierId: body.id,
