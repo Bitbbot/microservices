@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import Joi from "joi";
 import path from "path";
 
-const allowedExtensions = [".pdf", ".jpeg", ".png", ".svg", ".webp"];
+const allowedExtensions = [".pdf", ".jpeg", ".png", ".svg", ".webp", ".jpg"];
 
 class CertificateValidation {
   add(req: Request, res: Response, next: NextFunction) {

@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   UseGuards,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -23,6 +24,8 @@ import { TraceId } from './decorators/trace-id.decorator';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { AuthGuards } from './guards/auth.guards';
+import { ResponseStatusInterceptor } from './interceptors/createSupplier.status.interceptor';
+import { Observable, of } from 'rxjs';
 
 @Controller('suppliers')
 @UseGuards(AuthGuards)
@@ -50,20 +53,26 @@ export class SuppliersController {
 
   @Post()
   @UsePipes(new ValidationPipe({ transform: true }))
-  async create(@Body() supplierDto: SupplierDto, @TraceId() traceId: string) {
+  @UseInterceptors(ResponseStatusInterceptor)
+  create(
+    @Body() supplierDto: SupplierDto,
+    @TraceId() traceId: string,
+  ): Observable<any> {
     this.logger.log(
       `getOneSupplier {supplier:${JSON.stringify(supplierDto)}}`,
       SuppliersController.name,
     );
-    return this.commandBus.execute(
-      new AddSupplierCommand(
-        supplierDto.id,
-        supplierDto.name,
-        supplierDto.country,
-        supplierDto.vatNumber,
-        supplierDto.roles,
-        supplierDto.sectors,
-        traceId,
+    return of(
+      this.commandBus.execute(
+        new AddSupplierCommand(
+          supplierDto.id,
+          supplierDto.name,
+          supplierDto.country,
+          supplierDto.vatNumber,
+          supplierDto.roles,
+          supplierDto.sectors,
+          traceId,
+        ),
       ),
     );
   }

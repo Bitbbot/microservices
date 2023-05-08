@@ -15,13 +15,14 @@ const defaultOptions = () => {
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     synchronize: true,
+    host: process.env.POSTGRES_HOST,
   };
 };
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      envFilePath: '.local.env',
     }),
     TypeOrmModule.forRoot({
       ...defaultOptions(),

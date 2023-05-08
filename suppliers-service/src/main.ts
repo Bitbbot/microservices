@@ -21,6 +21,5 @@ async function bootstrap() {
     microserviceOptions,
   );
   await app.listen();
-  console.log('up');
 }
 bootstrap();

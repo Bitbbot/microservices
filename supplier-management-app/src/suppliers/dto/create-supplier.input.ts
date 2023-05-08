@@ -28,7 +28,6 @@ export class CreateSupplierInput {
   @Field(() => [String], { nullable: true, defaultValue: [] })
   sectors?: string[];
 
-  //ext validation
   @Field(() => [GraphQLUpload], { nullable: true, defaultValue: [] })
   certificates?: FileUploadInterface[];
 }

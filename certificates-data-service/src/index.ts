@@ -3,6 +3,7 @@ import cors from "cors";
 import router from "./routes/index.js";
 import mongoose from "mongoose";
 import * as dotenv from "dotenv";
+import { run } from "./services/kafka.js";
 dotenv.config();
 
 const app = express();
@@ -21,7 +22,10 @@ app.use("/api", router);
 
 const start = async () => {
   try {
-    await mongoose.connect(`mongodb://localhost:${process.env.MONGO_CERTIFICATES_PORT}/${process.env.MONGO_CERTIFICATES_NAME}`);
+    await mongoose.connect(
+      `mongodb://localhost:${process.env.MONGO_CERTIFICATES_PORT}/${process.env.MONGO_CERTIFICATES_NAME}`
+    );
+    run();
     await app.listen(process.env.CERTIFICATES_DATA_SERVICE_PORT, () => {
       console.log("Application has been started");
     });

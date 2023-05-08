@@ -8,15 +8,32 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { SupplierRepository } from './repositories/supplier.repository';
 import { EventsModule } from '../events/events.module';
 import { EventHandlers } from './events/handlers';
+import { ResponseStatusInterceptor } from './interceptors/createSupplier.status.interceptor';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
     CqrsModule,
     TypeOrmModule.forFeature([Role, Sector, Supplier], 'queries'),
     forwardRef(() => EventsModule),
+    ClientsModule.register([
+      {
+        name: 'CERT_SERVICE',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            clientId: '1',
+            brokers: ['localhost:29092'],
+          },
+          consumer: {
+            groupId: '1',
+          },
+        },
+      },
+    ]),
   ],
   controllers: [SuppliersController],
-  providers: [SupplierRepository, ...EventHandlers],
+  providers: [SupplierRepository, ...EventHandlers, ResponseStatusInterceptor],
   exports: [SupplierRepository],
 })
 export class SuppliersModule {}

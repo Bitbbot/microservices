@@ -9,10 +9,10 @@ class CertificateController {
       const files = req.files as Express.Multer.File[];
       const supplierId = req.body.supplierId;
 
-      await certificateService.create(supplierId, files);
-      return res.status(200).send("success");
+      const fileIds = await certificateService.create(supplierId, files);
+      return res.status(200).json({ message: "success", fileIds });
     } catch (error: unknown) {
-      return res.status(500).json({ error });
+      return res.status(500).send(error);
     }
   }
 
@@ -24,7 +24,7 @@ class CertificateController {
       await certificateService.delete(supplierId, files);
       return res.status(200).send("success");
     } catch (error: unknown) {
-      return res.status(500).json({ error });
+      return res.status(500).send(error);
     }
   }
   async getAllNames(req: Request, res: Response) {
@@ -38,7 +38,7 @@ class CertificateController {
 
       return res.status(200).json(JSON.stringify(names));
     } catch (error: unknown) {
-      return res.status(500).json({ error });
+      return res.status(500).json(error);
     }
   }
   async getFile(req: Request, res: Response) {
