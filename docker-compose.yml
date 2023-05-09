@@ -33,7 +33,7 @@ services:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
 
-  api:
+  suppliers-data-service:
     build:
       dockerfile: Dockerfile
       context: ./suppliers-data-service
@@ -41,16 +41,34 @@ services:
       - events
       - queries
     environment:
-      POSTGRES_HOST: host.docker.internal
-      SUPPLIERS_DATA_SERVICE_PORT: 3000
+      SUPPLIERS_DATA_SERVICE_PORT: 3007
       POSTGRES_EVENTS_PORT: 5433
       POSTGRES_QUERIES_PORT: 5434
+      POSTGRES_HOST: host.docker.internal
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root
       SUPPLIERS_DATA_SERVICE_LOGIN: DATAservLogin
       SUPPLIERS_DATA_SERVICE_PASSWORD: DATAservpassword
+      BROKER_URL: localhost:29092
+      KAFKA_CONSUMER_GROUP_ID: 1
+      KAFKA_CLIENT_ID: 1
     ports:
-      - "3007:3000"
+      - "3007:3007"
+
+  suppliers-management-app:
+    build:
+      dockerfile: Dockerfile
+      context: ./supplier-management-app
+    environment:
+      SUPPLIER_MANAGEMENT_APP_PORT: 3100
+      SUPPLIER_SERVICE_URL: host.docker.internal:50051
+    ports:
+      - "3100:3100"
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
 
   events:
     image: postgres:latest
