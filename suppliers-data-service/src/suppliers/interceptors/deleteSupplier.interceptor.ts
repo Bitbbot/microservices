@@ -8,6 +8,7 @@ import {
 import { catchError, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { ClientKafka } from '@nestjs/microservices';
+import { Request } from 'express';
 
 @Injectable()
 export class DeleteSupplierInterceptor implements NestInterceptor {
@@ -15,10 +16,10 @@ export class DeleteSupplierInterceptor implements NestInterceptor {
 
   handleSuccess(context: ExecutionContext) {
     const httpContext = context.switchToHttp();
-    const request = httpContext.getRequest();
-    const body = request.body;
+    const request: Request = httpContext.getRequest();
+    const id = request.params.id;
     this.client.emit<number>('delete_certificate', {
-      supplierId: body.id,
+      supplierId: id,
     });
   }
 

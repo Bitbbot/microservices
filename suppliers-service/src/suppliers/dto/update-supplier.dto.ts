@@ -5,7 +5,7 @@ export interface UpdateSupplierDto {
   vatNumber: number;
   roles: string[];
   sectors: string[];
-  certificates: Certificate[];
+  addCertificates: Certificate[];
   deleteCertificates: string[];
 }
 interface Certificate {

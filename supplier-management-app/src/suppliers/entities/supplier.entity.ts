@@ -1,4 +1,5 @@
 import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
+import GraphQLJSON from 'graphql-type-json';
 
 @ObjectType()
 export class Supplier {
@@ -20,6 +21,6 @@ export class Supplier {
   @Field(() => [String], { nullable: true })
   sectors?: string[];
 
-  @Field(() => [String, ID], { nullable: true })
-  certificates?: [{ name: string; id: string }];
+  @Field(() => GraphQLJSON, { nullable: true })
+  certificates?: JSON;
 }

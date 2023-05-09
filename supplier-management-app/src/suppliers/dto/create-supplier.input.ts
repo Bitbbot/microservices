@@ -1,14 +1,7 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
 import * as GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
 import { Max } from 'class-validator';
-import { Stream } from 'stream';
-
-interface FileUploadInterface {
-  filename: string;
-  mimetype: string;
-  encoding: string;
-  createReadStream: () => Stream;
-}
+import { FileUploadInterface } from '../entities/file-upload.interface';
 
 @InputType()
 export class CreateSupplierInput {

@@ -4,6 +4,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { ConfigModule } from '@nestjs/config';
+import GraphQLJSON from 'graphql-type-json';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ConfigModule } from '@nestjs/config';
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
+      resolvers: { JSON: GraphQLJSON },
     }),
     SuppliersModule,
   ],

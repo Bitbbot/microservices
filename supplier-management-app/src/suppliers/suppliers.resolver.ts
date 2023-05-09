@@ -24,22 +24,19 @@ export class SuppliersResolver {
   }
 
   @Query(() => Supplier, { name: 'supplier' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
+  findOne(@Args('id', { type: () => String }) id: string) {
     return this.suppliersService.findOne(id);
   }
 
-  @Mutation(() => Supplier)
+  @Mutation(() => IResponse)
   updateSupplier(
     @Args('updateSupplierInput') updateSupplierInput: UpdateSupplierInput,
   ) {
-    return this.suppliersService.update(
-      updateSupplierInput.id,
-      updateSupplierInput,
-    );
+    return this.suppliersService.update(updateSupplierInput);
   }
 
-  @Mutation(() => Supplier)
-  removeSupplier(@Args('id', { type: () => Int }) id: number) {
+  @Mutation(() => IResponse)
+  removeSupplier(@Args('id', { type: () => String }) id: string) {
     return this.suppliersService.remove(id);
   }
 }

@@ -162,7 +162,7 @@ export class SuppliersService {
           certificates: JSON.parse(certificates.data).map((certificate) => {
             return {
               fileName: certificate.fileName,
-              fileId: certificate.fileId,
+              fileId: `${process.env.CERTIFICATE_DATA_SERVICE_URL}api/certificate/${certificate.fileId}`,
             };
           }),
           ...supplier,
@@ -196,12 +196,12 @@ export class SuppliersService {
 
   async updateSupplier(data: UpdateSupplierDto) {
     let certRes = { status: 200, message: 'success', fileIds: [] };
-    if (data?.certificates?.length > 0) {
+    if (data?.addCertificates?.length > 0) {
       const form = new FormData();
 
       form.append('supplierId', data.id);
-      if (data.certificates) {
-        for (let certificate of data.certificates) {
+      if (data.addCertificates) {
+        for (let certificate of data.addCertificates) {
           form.append('files', certificate.file, {
             filename: certificate.filename,
             contentType: 'application/octet-stream',

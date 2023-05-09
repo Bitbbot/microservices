@@ -21,14 +21,12 @@ export async function run() {
 
   await consumer.run({
     eachMessage: async ({ message }: EachMessagePayload) => {
-      console.log("here");
       if (message.value?.toString()) {
         const { supplierId, fileIds } = JSON.parse(message.value?.toString());
-        if (fileIds.length === 0)
-          CertificateService.deleteBySupplierId(supplierId);
-        else CertificateService.delete(supplierId, fileIds);
+        if (fileIds && fileIds.length !== 0)
+          CertificateService.delete(supplierId, fileIds);
+        else CertificateService.deleteBySupplierId(supplierId);
       }
-      console.log("deleted");
     },
   });
 }

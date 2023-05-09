@@ -31,7 +31,7 @@ class CertificateService {
     const files = await this.getAllFiles(supplierId);
     for (let id of files) {
       try {
-        fs.unlinkSync(`public/${id}`);
+        fs.unlinkSync(`public/${id.fileId}`);
       } catch (e) {}
     }
     await File.deleteMany({ supplierId });

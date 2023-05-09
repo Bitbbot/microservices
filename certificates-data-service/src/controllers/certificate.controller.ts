@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 
 import certificateService from "../services/certificate.service.js";
-import CertificateService from "../services/certificate.service.js";
 
 class CertificateController {
   async add(req: Request, res: Response) {
@@ -44,7 +43,7 @@ class CertificateController {
   async getFile(req: Request, res: Response) {
     try {
       const id = req.params.id;
-      if (CertificateService.isFileExist(id))
+      if (certificateService.isFileExist(id))
         return res.status(200).download(`public/${id}`);
       return res.status(404).json("file not found");
     } catch (error: unknown) {

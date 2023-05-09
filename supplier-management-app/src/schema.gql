@@ -16,19 +16,24 @@ type IResponse {
   status: ID!
 }
 
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
 type Mutation {
   createSupplier(createSupplierInput: CreateSupplierInput!): IResponse!
-  removeSupplier(id: Int!): Supplier!
-  updateSupplier(updateSupplierInput: UpdateSupplierInput!): Supplier!
+  removeSupplier(id: String!): IResponse!
+  updateSupplier(updateSupplierInput: UpdateSupplierInput!): IResponse!
 }
 
 type Query {
-  supplier(id: Int!): Supplier!
+  supplier(id: String!): Supplier!
   suppliers: [Supplier!]!
 }
 
 type Supplier {
-  certificates: [String!]
+  certificates: JSON
   country: String!
   id: ID!
   name: String!
@@ -39,9 +44,10 @@ type Supplier {
 
 input UpdateSupplierInput {
   certificates: [Upload!] = []
-  country: String
+  country: String!
+  deleteCertificates: [String!] = []
   id: ID!
-  name: String
+  name: String!
   roles: [String!] = []
   sectors: [String!] = []
   vatNumber: Int
