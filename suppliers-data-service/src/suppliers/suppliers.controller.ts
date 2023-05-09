@@ -24,8 +24,10 @@ import { TraceId } from './decorators/trace-id.decorator';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { AuthGuards } from './guards/auth.guards';
-import { ResponseStatusInterceptor } from './interceptors/createSupplier.status.interceptor';
+import { CreateSupplierInterceptor } from './interceptors/createSupplier.interceptor';
 import { Observable, of } from 'rxjs';
+import { DeleteSupplierInterceptor } from './interceptors/deleteSupplier.interceptor';
+import { UpdateSupplierInterceptor } from './interceptors/updateSupplier.interceptor';
 
 @Controller('suppliers')
 @UseGuards(AuthGuards)
@@ -47,14 +49,13 @@ export class SuppliersController {
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<SupplierInterface> {
-    console.log('get');
     this.logger.log(`getOneSupplier {id:${id}}`, SuppliersController.name);
     return this.queryBus.execute(new GetSupplierQuery(id));
   }
 
   @Post()
   @UsePipes(new ValidationPipe({ transform: true }))
-  @UseInterceptors(ResponseStatusInterceptor)
+  @UseInterceptors(CreateSupplierInterceptor)
   create(
     @Body() supplierDto: SupplierDto,
     @TraceId() traceId: string,
@@ -79,26 +80,33 @@ export class SuppliersController {
   }
 
   @Patch()
+  @UseInterceptors(UpdateSupplierInterceptor)
   @UsePipes(new ValidationPipe({ transform: true }))
-  async update(@Body() supplierDto: SupplierDto, @TraceId() traceId: string) {
-    return this.commandBus.execute(
-      new UpdateSupplierCommand(
-        supplierDto.id,
-        supplierDto.name,
-        supplierDto.country,
-        supplierDto.vatNumber,
-        supplierDto.roles,
-        supplierDto.sectors,
-        traceId,
+  update(
+    @Body() supplierDto: SupplierDto,
+    @TraceId() traceId: string,
+  ): Observable<any> {
+    return of(
+      this.commandBus.execute(
+        new UpdateSupplierCommand(
+          supplierDto.id,
+          supplierDto.name,
+          supplierDto.country,
+          supplierDto.vatNumber,
+          supplierDto.roles,
+          supplierDto.sectors,
+          traceId,
+        ),
       ),
     );
   }
 
   @Delete(':id')
-  async deleteOne(
+  @UseInterceptors(DeleteSupplierInterceptor)
+  deleteOne(
     @Param('id', ParseUUIDPipe) id: string,
     @TraceId() traceId: string,
-  ) {
-    return this.commandBus.execute(new DeleteSupplierCommand(id, traceId));
+  ): Observable<any> {
+    return of(this.commandBus.execute(new DeleteSupplierCommand(id, traceId)));
   }
 }

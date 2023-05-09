@@ -10,7 +10,7 @@ import { tap } from 'rxjs/operators';
 import { ClientKafka } from '@nestjs/microservices';
 
 @Injectable()
-export class ResponseStatusInterceptor implements NestInterceptor {
+export class CreateSupplierInterceptor implements NestInterceptor {
   constructor(@Inject('CERT_SERVICE') private client: ClientKafka) {}
 
   //send a message to kafka to delete saved certificates
@@ -18,28 +18,19 @@ export class ResponseStatusInterceptor implements NestInterceptor {
     const httpContext = context.switchToHttp();
     const request = httpContext.getRequest();
     const body = request.body;
-    console.log(process.env.BROKER_URL);
     if (body.fileIds.length > 0)
       this.client.emit<number>('delete_certificate', {
         supplierId: body.id,
         fileIds: body.fileIds,
       });
-    console.log('Request body:', body);
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    console.log('here');
-
     return next.handle().pipe(
       tap((response) => {
-        response
-          .then(() => {
-            console.log('Response Status OK');
-          })
-          .catch(() => {
-            this.handleError(context);
-            console.log('error');
-          });
+        response.catch((err: any) => {
+          this.handleError(context);
+        });
       }),
       catchError((err) => {
         this.handleError(context);

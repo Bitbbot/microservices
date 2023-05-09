@@ -8,16 +8,14 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { SupplierRepository } from './repositories/supplier.repository';
 import { EventsModule } from '../events/events.module';
 import { EventHandlers } from './events/handlers';
-import { ResponseStatusInterceptor } from './interceptors/createSupplier.status.interceptor';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    // ConfigModule.forRoot({
-    //   envFilePath: '.env',
-    // }),
-    // ConfigModule,
+    ConfigModule.forRoot({
+      envFilePath: '.env',
+    }),
     CqrsModule,
     TypeOrmModule.forFeature([Role, Sector, Supplier], 'queries'),
     forwardRef(() => EventsModule),
@@ -38,7 +36,7 @@ import { ConfigModule } from '@nestjs/config';
     ]),
   ],
   controllers: [SuppliersController],
-  providers: [SupplierRepository, ...EventHandlers, ResponseStatusInterceptor],
+  providers: [SupplierRepository, ...EventHandlers],
   exports: [SupplierRepository],
 })
 export class SuppliersModule {}

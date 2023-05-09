@@ -29,4 +29,14 @@ export class SupplierDto {
   @IsOptional()
   @IsNumberString()
   vatNumber: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  fileIds: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  deleteFiles: string[];
 }

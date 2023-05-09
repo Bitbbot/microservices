@@ -22,7 +22,7 @@ message UpdateRequest {
   repeated string roles = 5;
   repeated string sectors = 6;
   repeated AddCertificate addCertificates = 7;
-  repeated string deleteCertificate = 8;
+  repeated string deleteCertificates = 8;
 }
 
 message DeleteRequest {

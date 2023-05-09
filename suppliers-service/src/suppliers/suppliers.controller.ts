@@ -4,6 +4,8 @@ import { SuppliersService } from './suppliers.service';
 import { CreateSupplierDto } from './dto/create-request.dto';
 import { Result } from './interfaces/result.interface';
 import { GetSupplierDto } from './dto/get-request.dto';
+import { DeleteSupplierDto } from './dto/delete-supplier.dto';
+import { UpdateSupplierDto } from './dto/update-supplier.dto';
 
 @Controller()
 export class SuppliersController {
@@ -22,5 +24,15 @@ export class SuppliersController {
   @GrpcMethod('SupplierService', 'GetSuppliers')
   getSuppliers(): Promise<any> {
     return this.suppliersService.getSuppliers();
+  }
+
+  @GrpcMethod('SupplierService', 'DeleteSupplier')
+  deleteSupplier(data: DeleteSupplierDto): Promise<Result> {
+    return this.suppliersService.deleteSupplier(data);
+  }
+
+  @GrpcMethod('SupplierService', 'UpdateSupplier')
+  updateSupplier(data: UpdateSupplierDto): Promise<any> {
+    return this.suppliersService.updateSupplier(data);
   }
 }
