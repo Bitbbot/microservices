@@ -28,15 +28,15 @@ type Mutation {
 }
 
 type Query {
-  supplier(id: String!): Supplier!
-  suppliers: [Supplier!]!
+  supplier(id: String!): Supplier
+  suppliers: [Supplier!]
 }
 
 type Supplier {
   certificates: JSON
-  country: String!
-  id: ID!
-  name: String!
+  country: String
+  id: ID
+  name: String
   roles: [String!]
   sectors: [String!]
   vatNumber: Int

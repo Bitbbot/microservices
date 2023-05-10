@@ -18,12 +18,12 @@ export class SuppliersResolver {
     return this.suppliersService.create(createSupplierInput);
   }
 
-  @Query(() => [Supplier], { name: 'suppliers' })
+  @Query(() => [Supplier], { name: 'suppliers', nullable: true })
   findAll() {
     return this.suppliersService.findAll();
   }
 
-  @Query(() => Supplier, { name: 'supplier' })
+  @Query(() => Supplier, { name: 'supplier', nullable: true })
   findOne(@Args('id', { type: () => String }) id: string) {
     return this.suppliersService.findOne(id);
   }

@@ -49,7 +49,7 @@ services:
       POSTGRES_PASSWORD: root
       SUPPLIERS_DATA_SERVICE_LOGIN: DATAservLogin
       SUPPLIERS_DATA_SERVICE_PASSWORD: DATAservpassword
-      BROKER_URL: localhost:29092
+      BROKER_URL: kafka:9092
       KAFKA_CONSUMER_GROUP_ID: 1
       KAFKA_CLIENT_ID: 1
     ports:
@@ -59,11 +59,53 @@ services:
     build:
       dockerfile: Dockerfile
       context: ./supplier-management-app
+    depends_on:
+      - suppliers-service
     environment:
       SUPPLIER_MANAGEMENT_APP_PORT: 3100
       SUPPLIER_SERVICE_URL: host.docker.internal:50051
     ports:
       - "3100:3100"
+
+  certificate-data-service:
+    build:
+      dockerfile: Dockerfile
+      context: ./certificates-data-service
+    depends_on:
+      - mongo
+      - kafka
+      - zookeeper
+      - kafka_ui
+    environment:
+      CERTIFICATE_DATA_SERVICE_LOGIN: SUPSERV
+      CERTIFICATE_DATA_SERVICE_PASSWORD: SUPSERVpass
+      MONGO_CERTIFICATES_NAME: certificates
+      MONGO_CERTIFICATES_URL: host.docker.internal:27017
+      CERTIFICATES_DATA_SERVICE_PORT: 3008
+      BROKER_URL: kafka:9092
+      KAFKA_CONSUMER_GROUP_ID: 1
+      KAFKA_CLIENT_ID: 1
+    ports:
+      - "3008:3008"
+
+  suppliers-service:
+    build:
+      dockerfile: Dockerfile
+      context: ./suppliers-service
+    depends_on:
+      - suppliers-data-service
+      - certificate-data-service
+    environment:
+      CERTIFICATE_DATA_SERVICE_LOGIN: SUPSERV
+      CERTIFICATE_DATA_SERVICE_PASSWORD: SUPSERVpass
+      SUPPLIERS_DATA_SERVICE_LOGIN: DATAservLogin
+      SUPPLIERS_DATA_SERVICE_PASSWORD: DATAservpassword
+      CERTIFICATE_DATA_SERVICE_URL: http://host.docker.internal:3008/
+      SUPPLIERS_DATA_SERVICE_URL: http://host.docker.internal:3007/
+      SUPPLIERS_SERVICE_URL: 0.0.0.0:50051
+    ports:
+      - "50051:50051"
+
 
   mongo:
     image: mongo:latest

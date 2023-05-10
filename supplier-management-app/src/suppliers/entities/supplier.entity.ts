@@ -3,13 +3,13 @@ import GraphQLJSON from 'graphql-type-json';
 
 @ObjectType()
 export class Supplier {
-  @Field(() => ID)
+  @Field(() => ID, { nullable: true })
   id: number;
 
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   country: string;
 
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   name: string;
 
   @Field(() => Int, { nullable: true })
