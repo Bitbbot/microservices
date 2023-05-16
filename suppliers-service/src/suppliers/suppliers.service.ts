@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSupplierDto } from './dto/create-request.dto';
+import { CreateSupplierDto } from './dto/create-supplier.dto';
 const FormData = require('form-data');
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,8 +11,39 @@ import { Result } from './interfaces/result.interface';
 @Injectable()
 export class SuppliersService {
   async createSupplier(data: CreateSupplierDto): Promise<Result> {
-    let certRes = { status: 200, message: 'success', fileIds: [] };
-    if (data?.certificates?.length > 0) {
+    try {
+      const response = await axios.post(
+        `${process.env.SUPPLIERS_DATA_SERVICE_URL}suppliers`,
+        {
+          id: data.id,
+          name: data.name,
+          country: data.country,
+          vatNumber: String(data.vatNumber),
+          roles: data.roles,
+          sectors: data.sectors,
+        },
+        {
+          headers: {
+            traceId: uuidv4(),
+            login: process.env.SUPPLIERS_DATA_SERVICE_LOGIN,
+            password: process.env.SUPPLIERS_DATA_SERVICE_PASSWORD,
+          },
+        },
+      );
+      return { status: response.status, message: 'success' };
+    } catch (error) {
+      return {
+        status: error.response.data.statusCode,
+        message: error.response.data.message,
+      };
+    }
+  }
+
+  async createCertificates(data: CreateSupplierDto): Promise<any> {
+    if (!(data?.certificates?.length > 0)) {
+      return { status: 200, message: 'success' };
+    }
+    try {
       const form = new FormData();
 
       form.append('supplierId', data.id);
@@ -25,128 +56,63 @@ export class SuppliersService {
         }
       }
 
-      certRes = await axios
-        .post(
-          `${process.env.CERTIFICATE_DATA_SERVICE_URL}api/certificate/`,
-          form,
-          {
-            headers: {
-              login: process.env.CERTIFICATE_DATA_SERVICE_LOGIN,
-              password: process.env.CERTIFICATE_DATA_SERVICE_PASSWORD,
-              ...form.getHeaders(),
-            },
-          },
-        )
-        .then((response) => {
-          return {
-            status: response.status,
-            message: 'success',
-            fileIds: response.data.fileIds,
-          };
-        })
-        .catch((error) => {
-          return {
-            status: error.response.status,
-            message: error.response.data.message,
-            fileIds: [],
-          };
-        });
-
-      if (certRes.status !== 200) {
-        return { status: certRes.status, message: certRes.message };
-      }
-    }
-    const suppRes = await axios
-      .post(
-        `${process.env.SUPPLIERS_DATA_SERVICE_URL}suppliers`,
-        {
-          id: data.id,
-          name: data.name,
-          country: data.country,
-          vatNumber: String(data.vatNumber),
-          roles: data.roles,
-          sectors: data.sectors,
-          fileIds: certRes.fileIds,
-        },
+      const response = await axios.post(
+        `${process.env.CERTIFICATE_DATA_SERVICE_URL}api/certificate/`,
+        form,
         {
           headers: {
-            traceId: uuidv4(),
+            login: process.env.CERTIFICATE_DATA_SERVICE_LOGIN,
+            password: process.env.CERTIFICATE_DATA_SERVICE_PASSWORD,
+            ...form.getHeaders(),
+          },
+        },
+      );
+      return {
+        status: response.status,
+        message: 'success',
+      };
+    } catch (error) {
+      return {
+        status: error.response.status,
+        message: error.response.data.message,
+      };
+    }
+  }
+
+  async getSupplier(data: GetSupplierDto): Promise<any> {
+    try {
+      const suppRes = await axios.get(
+        `${process.env.SUPPLIERS_DATA_SERVICE_URL}suppliers/${data.id}`,
+        {
+          headers: {
             login: process.env.SUPPLIERS_DATA_SERVICE_LOGIN,
             password: process.env.SUPPLIERS_DATA_SERVICE_PASSWORD,
           },
         },
-      )
-      .then((response) => {
-        return { status: certRes.status, message: certRes.message };
-      })
-      .catch((error) => {
-        return {
-          status: error.response.data.statusCode,
-          message: error.response.data.message,
-        };
-      });
-    return { status: suppRes.status, message: suppRes.message };
-  }
+      );
+      const supplier = suppRes.data;
 
-  async getSupplier(data: GetSupplierDto): Promise<any> {
-    const suppRes = await axios
-      .get(`${process.env.SUPPLIERS_DATA_SERVICE_URL}suppliers/${data.id}`, {
-        headers: {
-          login: process.env.SUPPLIERS_DATA_SERVICE_LOGIN,
-          password: process.env.SUPPLIERS_DATA_SERVICE_PASSWORD,
+      const certRes = await axios.get(
+        `${process.env.CERTIFICATE_DATA_SERVICE_URL}api/certificate/getAllNames?supplierId=${data.id}`,
+        {
+          headers: {
+            login: process.env.CERTIFICATE_DATA_SERVICE_LOGIN,
+            password: process.env.CERTIFICATE_DATA_SERVICE_PASSWORD,
+          },
         },
-      })
-      .then((response) => {
-        return { ...response.data, error: false };
-      })
-      .catch((error) => {
-        return { error: true };
-      });
-    if (suppRes.error === true) return {};
+      );
 
-    const certRes = await axios.get(
-      `${process.env.CERTIFICATE_DATA_SERVICE_URL}api/certificate/getAllNames?supplierId=${data.id}`,
-      {
-        headers: {
-          login: process.env.CERTIFICATE_DATA_SERVICE_LOGIN,
-          password: process.env.CERTIFICATE_DATA_SERVICE_PASSWORD,
-        },
-      },
-    );
-    suppRes.certificates = JSON.parse(certRes.data).map((cert) => {
-      return { fileName: cert.fileName, fileId: cert.fileId };
-    });
-    return suppRes;
+      supplier.certificates = JSON.parse(certRes.data).map((cert) => {
+        return { fileName: cert.fileName, fileId: cert.fileId };
+      });
+
+      return supplier;
+    } catch (error) {
+      return {};
+    }
   }
 
   async getSuppliers() {
-    const suppRes = await axios
-      .get(`${process.env.SUPPLIERS_DATA_SERVICE_URL}suppliers/`, {
-        headers: {
-          login: process.env.SUPPLIERS_DATA_SERVICE_LOGIN,
-          password: process.env.SUPPLIERS_DATA_SERVICE_PASSWORD,
-        },
-      })
-      .then((response) => {
-        return { data: response.data, error: false };
-      })
-      .catch((error) => {
-        return { data: '', error: true };
-      });
-
-    if (suppRes.error === true) return {};
-    const suppliers = suppRes.data.map((supplier) => {
-      return {
-        ...supplier,
-        roles: supplier.roles.map((role) => {
-          return role.role;
-        }),
-        sectors: supplier.sectors.map((sector) => {
-          return sector.sector;
-        }),
-      };
-    });
-
     async function getSuppliersWithCertificates(suppliers) {
       const promises = suppliers.map(async (supplier) => {
         const certificates = await axios.get(
@@ -170,78 +136,60 @@ export class SuppliersService {
       });
       return await Promise.all(promises);
     }
-    const supps = await getSuppliersWithCertificates(suppliers);
-    return { suppliers: supps };
+
+    try {
+      const response = await axios.get(
+        `${process.env.SUPPLIERS_DATA_SERVICE_URL}suppliers/`,
+        {
+          headers: {
+            login: process.env.SUPPLIERS_DATA_SERVICE_LOGIN,
+            password: process.env.SUPPLIERS_DATA_SERVICE_PASSWORD,
+          },
+        },
+      );
+      const suppRes = { data: response.data, error: false };
+      const suppliers = suppRes.data.map((supplier) => {
+        return {
+          ...supplier,
+          roles: supplier.roles.map((role) => {
+            return role.role;
+          }),
+          sectors: supplier.sectors.map((sector) => {
+            return sector.sector;
+          }),
+        };
+      });
+      const supps = await getSuppliersWithCertificates(suppliers);
+      return { suppliers: supps };
+    } catch (error) {
+      return {};
+    }
   }
 
   async deleteSupplier(data: DeleteSupplierDto): Promise<Result> {
-    return axios
-      .delete(`${process.env.SUPPLIERS_DATA_SERVICE_URL}suppliers/${data.id}`, {
-        headers: {
-          traceId: uuidv4(),
-          login: process.env.SUPPLIERS_DATA_SERVICE_LOGIN,
-          password: process.env.SUPPLIERS_DATA_SERVICE_PASSWORD,
+    try {
+      await axios.delete(
+        `${process.env.SUPPLIERS_DATA_SERVICE_URL}suppliers/${data.id}`,
+        {
+          headers: {
+            traceId: uuidv4(),
+            login: process.env.SUPPLIERS_DATA_SERVICE_LOGIN,
+            password: process.env.SUPPLIERS_DATA_SERVICE_PASSWORD,
+          },
         },
-      })
-      .then((response) => {
-        return { status: 200, message: 'success' };
-      })
-      .catch((error) => {
-        return {
-          status: error.response.data.statusCode as number,
-          message: error.response.data.message as string,
-        };
-      });
+      );
+      return { status: 200, message: 'success' };
+    } catch (error) {
+      return {
+        status: error.response.data.statusCode as number,
+        message: error.response.data.message as string,
+      };
+    }
   }
 
   async updateSupplier(data: UpdateSupplierDto) {
-    let certRes = { status: 200, message: 'success', fileIds: [] };
-    if (data?.addCertificates?.length > 0) {
-      const form = new FormData();
-
-      form.append('supplierId', data.id);
-      if (data.addCertificates) {
-        for (let certificate of data.addCertificates) {
-          form.append('files', certificate.file, {
-            filename: certificate.filename,
-            contentType: 'application/octet-stream',
-          });
-        }
-      }
-
-      certRes = await axios
-        .post(
-          `${process.env.CERTIFICATE_DATA_SERVICE_URL}api/certificate/`,
-          form,
-          {
-            headers: {
-              login: process.env.CERTIFICATE_DATA_SERVICE_LOGIN,
-              password: process.env.CERTIFICATE_DATA_SERVICE_PASSWORD,
-              ...form.getHeaders(),
-            },
-          },
-        )
-        .then((response) => {
-          return {
-            status: response.status,
-            message: 'success',
-            fileIds: response.data.fileIds,
-          };
-        })
-        .catch((error) => {
-          return {
-            status: error.response.status,
-            message: error.response.data.message,
-            fileIds: [],
-          };
-        });
-
-      if (certRes.status !== 200) {
-        return { status: certRes.status, message: certRes.message };
-      }
-    }
-    const suppRes = await axios
-      .patch(
+    try {
+      await axios.patch(
         `${process.env.SUPPLIERS_DATA_SERVICE_URL}suppliers`,
         {
           id: data.id,
@@ -250,7 +198,6 @@ export class SuppliersService {
           vatNumber: String(data.vatNumber),
           roles: data.roles,
           sectors: data.sectors,
-          fileIds: certRes.fileIds,
           deleteFiles: data.deleteCertificates,
         },
         {
@@ -260,16 +207,17 @@ export class SuppliersService {
             password: process.env.SUPPLIERS_DATA_SERVICE_PASSWORD,
           },
         },
-      )
-      .then((response) => {
-        return { status: certRes.status, message: certRes.message };
-      })
-      .catch((error) => {
-        return {
-          status: error.response.data.statusCode,
-          message: error.response.data.message,
-        };
-      });
-    return { status: suppRes.status, message: suppRes.message };
+      );
+      const newData = {
+        ...data,
+        certificates: data.addCertificates,
+        supplierId: data.id,
+      };
+      const res = await this.createCertificates(newData);
+      if (res.status === 200) return { status: 200, message: 'success' };
+      else throw new Error();
+    } catch (error) {
+      return { status: 400, message: 'BAD REQUEST' };
+    }
   }
 }

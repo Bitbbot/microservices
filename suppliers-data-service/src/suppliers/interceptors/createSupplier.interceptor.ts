@@ -18,11 +18,10 @@ export class CreateSupplierInterceptor implements NestInterceptor {
     const httpContext = context.switchToHttp();
     const request = httpContext.getRequest();
     const body = request.body;
-    if (body.fileIds.length > 0)
-      this.client.emit<number>('delete_certificate', {
-        supplierId: body.id,
-        fileIds: body.fileIds,
-      });
+    // if (body.fileIds.length > 0)
+    this.client.emit<number>('delete_certificate', {
+      supplierId: body.id,
+    });
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
