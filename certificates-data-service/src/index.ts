@@ -22,9 +22,6 @@ app.use("/api", router);
 
 const start = async () => {
   try {
-    // await mongoose.connect(
-    //   `mongodb://localhost:${process.env.MONGO_CERTIFICATES_PORT}/${process.env.MONGO_CERTIFICATES_NAME}`
-    // );
     await mongoose.connect(
       `mongodb://${process.env.MONGO_CERTIFICATES_URL}/${process.env.MONGO_CERTIFICATES_NAME}`
     );

@@ -63,7 +63,7 @@ services:
       - suppliers-service
     environment:
       SUPPLIER_MANAGEMENT_APP_PORT: 3100
-      SUPPLIER_SERVICE_URL: host.docker.internal:50051
+      SUPPLIER_SERVICE_URL: suppliers-service:50051
     ports:
       - "3100:3100"
 
@@ -102,7 +102,7 @@ services:
       SUPPLIERS_DATA_SERVICE_PASSWORD: DATAservpassword
       CERTIFICATE_DATA_SERVICE_URL: http://host.docker.internal:3008/
       SUPPLIERS_DATA_SERVICE_URL: http://host.docker.internal:3007/
-      SUPPLIERS_SERVICE_URL: 0.0.0.0:50051
+      SUPPLIERS_SERVICE_URL: suppliers-service:50051
     ports:
       - "50051:50051"
 
