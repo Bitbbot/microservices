@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 const FormData = require('form-data');
-import axios from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { GetSupplierDto } from './dto/get-request.dto';
 import { DeleteSupplierDto } from './dto/delete-supplier.dto';
@@ -12,6 +12,8 @@ import {
   mapCreateSupplierDtoToData,
   mapUpdateSupplierDtoToData,
 } from './data.mappers';
+import { HttpService } from '@nestjs/axios';
+import { catchError, firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class SuppliersService {
@@ -22,7 +24,10 @@ export class SuppliersService {
   private certificateDataServicePassword: string;
   private certificateDataServiceLogin: string;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private readonly httpService: HttpService,
+  ) {
     this.suppliersDataServiceUrl = this.configService.get<string>(
       'SUPPLIERS_DATA_SERVICE_URL',
     );
@@ -47,17 +52,15 @@ export class SuppliersService {
     try {
       const mappedData = mapCreateSupplierDtoToData(data);
 
-      const response = await axios.post(
-        `${this.suppliersDataServiceUrl}suppliers`,
-        mappedData,
-        {
+      const response = await this.httpService
+        .post(`${this.suppliersDataServiceUrl}suppliers`, mappedData, {
           headers: {
             traceId: uuidv4(),
             login: this.suppliersDataServiceLogin,
             password: this.suppliersDataServicePassword,
           },
-        },
-      );
+        })
+        .toPromise();
       return { status: response.status, message: 'success' };
     } catch (error) {
       return {
@@ -71,10 +74,11 @@ export class SuppliersService {
     if (!(data?.certificates?.length > 0)) {
       return { status: 200, message: 'success' };
     }
+
     try {
       const form = new FormData();
-
       form.append('supplierId', data.id);
+
       if (data.certificates) {
         for (let certificate of data.certificates) {
           form.append('files', certificate.file, {
@@ -84,17 +88,16 @@ export class SuppliersService {
         }
       }
 
-      const response = await axios.post(
-        `${this.certificateDataServiceUrl}api/certificate/`,
-        form,
-        {
+      const response: AxiosResponse = await this.httpService
+        .post(`${this.certificateDataServiceUrl}api/certificate/`, form, {
           headers: {
             login: this.certificateDataServiceLogin,
             password: this.certificateDataServicePassword,
             ...form.getHeaders(),
           },
-        },
-      );
+        })
+        .toPromise();
+
       return {
         status: response.status,
         message: 'success',
@@ -109,26 +112,28 @@ export class SuppliersService {
 
   async getSupplier(data: GetSupplierDto): Promise<any> {
     try {
-      const suppRes = await axios.get(
-        `${this.suppliersDataServiceUrl}suppliers/${data.id}`,
-        {
+      const suppRes: AxiosResponse = await this.httpService
+        .get(`${this.suppliersDataServiceUrl}suppliers/${data.id}`, {
           headers: {
             login: this.suppliersDataServiceLogin,
             password: this.suppliersDataServicePassword,
           },
-        },
-      );
+        })
+        .toPromise();
+
       const supplier = suppRes.data;
 
-      const certRes = await axios.get(
-        `${this.certificateDataServiceUrl}api/certificate/getAllNames?supplierId=${data.id}`,
-        {
-          headers: {
-            login: this.certificateDataServiceLogin,
-            password: this.certificateDataServicePassword,
+      const certRes: AxiosResponse = await this.httpService
+        .get(
+          `${this.certificateDataServiceUrl}api/certificate/getAllNames?supplierId=${data.id}`,
+          {
+            headers: {
+              login: this.certificateDataServiceLogin,
+              password: this.certificateDataServicePassword,
+            },
           },
-        },
-      );
+        )
+        .toPromise();
 
       supplier.certificates = JSON.parse(certRes.data).map((cert) => {
         return { fileName: cert.fileName, fileId: cert.fileId };
@@ -140,22 +145,27 @@ export class SuppliersService {
     }
   }
 
-  async getSuppliers() {
+  async getSuppliers(): Promise<any> {
     const certificateDataServiceUrl = this.certificateDataServiceUrl;
     const certificateDataServiceLogin = this.certificateDataServiceLogin;
     const certificateDataServicePassword = this.certificateDataServicePassword;
 
-    async function getSuppliersWithCertificates(suppliers) {
+    const httpServiceLocal = this.httpService;
+
+    async function getSuppliersWithCertificates(suppliers): Promise<any> {
       const promises = suppliers.map(async (supplier) => {
-        const certificates = await axios.get(
-          `${certificateDataServiceUrl}api/certificate/getAllNames?supplierId=${supplier.id}`,
-          {
-            headers: {
-              login: certificateDataServiceLogin,
-              password: certificateDataServicePassword,
+        const certificates = await httpServiceLocal
+          .get(
+            `${certificateDataServiceUrl}api/certificate/getAllNames?supplierId=${supplier.id}`,
+            {
+              headers: {
+                login: certificateDataServiceLogin,
+                password: certificateDataServicePassword,
+              },
             },
-          },
-        );
+          )
+          .toPromise();
+
         return {
           certificates: JSON.parse(certificates.data).map((certificate) => {
             return {
@@ -170,15 +180,15 @@ export class SuppliersService {
     }
 
     try {
-      const response = await axios.get(
-        `${this.suppliersDataServiceUrl}suppliers/`,
-        {
+      const response = await this.httpService
+        .get(`${this.suppliersDataServiceUrl}suppliers/`, {
           headers: {
             login: this.suppliersDataServiceLogin,
             password: this.suppliersDataServicePassword,
           },
-        },
-      );
+        })
+        .toPromise();
+
       const suppRes = { data: response.data, error: false };
       const suppliers = suppRes.data.map((supplier) => {
         return {
@@ -200,16 +210,16 @@ export class SuppliersService {
 
   async deleteSupplier(data: DeleteSupplierDto): Promise<Result> {
     try {
-      await axios.delete(
-        `${this.suppliersDataServiceUrl}suppliers/${data.id}`,
-        {
+      await this.httpService
+        .delete(`${this.suppliersDataServiceUrl}suppliers/${data.id}`, {
           headers: {
             traceId: uuidv4(),
             login: this.suppliersDataServiceLogin,
             password: this.suppliersDataServicePassword,
           },
-        },
-      );
+        })
+        .toPromise();
+
       return { status: 200, message: 'success' };
     } catch (error) {
       return {
@@ -219,29 +229,33 @@ export class SuppliersService {
     }
   }
 
-  async updateSupplier(data: UpdateSupplierDto) {
+  async updateSupplier(data: UpdateSupplierDto): Promise<Result> {
     try {
       const mappedData = mapUpdateSupplierDtoToData(data);
 
-      await axios.patch(
-        `${this.suppliersDataServiceUrl}suppliers`,
-        mappedData,
-        {
+      await this.httpService
+        .patch(`${this.suppliersDataServiceUrl}suppliers`, mappedData, {
           headers: {
             traceId: uuidv4(),
             login: this.suppliersDataServiceLogin,
             password: this.suppliersDataServicePassword,
           },
-        },
-      );
+        })
+        .toPromise();
+
       const newData = {
         ...data,
         certificates: data.addCertificates,
         supplierId: data.id,
       };
+
       const res = await this.createCertificates(newData);
-      if (res.status === 200) return { status: 200, message: 'success' };
-      else throw new Error();
+
+      if (res.status === 200) {
+        return { status: 200, message: 'success' };
+      } else {
+        throw new Error();
+      }
     } catch (error) {
       return { status: 400, message: 'BAD REQUEST' };
     }
