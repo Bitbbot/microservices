@@ -48,18 +48,11 @@ export class SupplierRepository {
       name,
       country,
       vatNumber,
+      sectors: sectors
+        ? sectors.map((sector) => this.sectorRepo.create({ sector }))
+        : [],
+      roles: roles ? roles.map((role) => this.roleRepo.create({ role })) : [],
     });
-
-    if (sectors)
-      newSupplier.sectors = sectors.map((sector: string) =>
-        this.sectorRepo.create({ sector }),
-      );
-    else newSupplier.sectors = [];
-    if (roles)
-      newSupplier.roles = roles.map((role: string) =>
-        this.roleRepo.create({ role }),
-      );
-    else newSupplier.roles = [];
 
     return this.supplierRepo.save(newSupplier);
   }

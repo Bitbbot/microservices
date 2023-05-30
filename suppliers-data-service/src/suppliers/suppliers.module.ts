@@ -8,8 +8,9 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { SupplierRepository } from './repositories/supplier.repository';
 import { EventsModule } from '../events/events.module';
 import { EventHandlers } from './events/handlers';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { ConfigModule } from '@nestjs/config';
+import { ClientProxyFactory, Transport } from '@nestjs/microservices';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { KafkaOptions } from '@nestjs/microservices/interfaces/microservice-configuration.interface';
 
 @Module({
   imports: [
@@ -19,24 +20,31 @@ import { ConfigModule } from '@nestjs/config';
     CqrsModule,
     TypeOrmModule.forFeature([Role, Sector, Supplier], 'queries'),
     forwardRef(() => EventsModule),
-    ClientsModule.register([
-      {
-        name: 'CERT_SERVICE',
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            clientId: process.env.KAFKA_CLIENT_ID,
-            brokers: [`${process.env.BROKER_URL}`],
-          },
-          consumer: {
-            groupId: `${process.env.KAFKA_CONSUMER_GROUP_ID}`,
-          },
-        },
-      },
-    ]),
   ],
   controllers: [SuppliersController],
-  providers: [SupplierRepository, ...EventHandlers],
+  providers: [
+    SupplierRepository,
+    ...EventHandlers,
+    {
+      provide: 'CERT_SERVICE',
+      useFactory: (configService: ConfigService) => {
+        const kafkaOptions: KafkaOptions = {
+          transport: Transport.KAFKA,
+          options: {
+            client: {
+              clientId: configService.get('KAFKA_CLIENT_ID'),
+              brokers: [String(configService.get('BROKER_URL'))],
+            },
+            consumer: {
+              groupId: String(configService.get('KAFKA_CONSUMER_GROUP_ID')),
+            },
+          },
+        };
+        return ClientProxyFactory.create(kafkaOptions);
+      },
+      inject: [ConfigService],
+    },
+  ],
   exports: [SupplierRepository],
 })
 export class SuppliersModule {}

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
@@ -10,12 +10,12 @@ import { Sector } from './suppliers/entities/queries/sector.entity';
 import { Role } from './suppliers/entities/queries/role.entity';
 import { EventsModule } from './events/events.module';
 
-const defaultOptions = () => {
+const defaultOptions = (configService: ConfigService) => {
   return {
-    username: process.env.POSTGRES_USER,
-    password: process.env.POSTGRES_PASSWORD,
+    username: configService.get<string>('POSTGRES_USER'),
+    password: configService.get<string>('POSTGRES_PASSWORD'),
     synchronize: true,
-    host: process.env.POSTGRES_HOST,
+    host: configService.get<string>('POSTGRES_HOST'),
   };
 };
 
@@ -23,22 +23,34 @@ const defaultOptions = () => {
   imports: [
     ConfigModule.forRoot({
       envFilePath: '.env',
-      isGlobal: true,
     }),
-    TypeOrmModule.forRoot({
-      ...defaultOptions(),
-      port: Number(process.env.POSTGRES_EVENTS_PORT),
-      type: 'postgres',
+
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        return {
+          ...defaultOptions(configService),
+          port: configService.get<number>('POSTGRES_EVENTS_PORT'),
+          type: 'postgres',
+          entities: [Event],
+        };
+      },
       name: 'events',
-      entities: [Event],
+      inject: [ConfigService],
     }),
-    TypeOrmModule.forRoot({
-      ...defaultOptions(),
-      port: Number(process.env.POSTGRES_QUERIES_PORT),
-      type: 'postgres',
+
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        ...defaultOptions(configService),
+        port: Number(configService.get<number>('POSTGRES_QUERIES_PORT')),
+        type: 'postgres',
+        entities: [Supplier, Sector, Role],
+      }),
       name: 'queries',
-      entities: [Supplier, Sector, Role],
+      inject: [ConfigService],
     }),
+
     WinstonModule.forRoot({
       level: 'info',
       format: winston.format.json(),

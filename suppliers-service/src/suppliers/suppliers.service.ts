@@ -7,13 +7,42 @@ import { GetSupplierDto } from './dto/get-request.dto';
 import { DeleteSupplierDto } from './dto/delete-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { Result } from './interfaces/result.interface';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SuppliersService {
+  private suppliersDataServiceUrl: string;
+  private suppliersDataServiceLogin: string;
+  private suppliersDataServicePassword: string;
+  private certificateDataServiceUrl: string;
+  private certificateDataServicePassword: string;
+  private certificateDataServiceLogin: string;
+
+  constructor(private configService: ConfigService) {
+    this.suppliersDataServiceUrl = this.configService.get<string>(
+      'SUPPLIERS_DATA_SERVICE_URL',
+    );
+    this.suppliersDataServiceLogin = this.configService.get<string>(
+      'SUPPLIERS_DATA_SERVICE_LOGIN',
+    );
+    this.suppliersDataServicePassword = this.configService.get<string>(
+      'SUPPLIERS_DATA_SERVICE_PASSWORD',
+    );
+    this.certificateDataServiceUrl = this.configService.get<string>(
+      'CERTIFICATE_DATA_SERVICE_URL',
+    );
+    this.certificateDataServicePassword = this.configService.get<string>(
+      'CERTIFICATE_DATA_SERVICE_PASSWORD',
+    );
+    this.certificateDataServiceLogin = this.configService.get<string>(
+      'CERTIFICATE_DATA_SERVICE_LOGIN',
+    );
+  }
+
   async createSupplier(data: CreateSupplierDto): Promise<Result> {
     try {
       const response = await axios.post(
-        `${process.env.SUPPLIERS_DATA_SERVICE_URL}suppliers`,
+        `${this.suppliersDataServiceUrl}suppliers`,
         {
           id: data.id,
           name: data.name,
@@ -25,8 +54,8 @@ export class SuppliersService {
         {
           headers: {
             traceId: uuidv4(),
-            login: process.env.SUPPLIERS_DATA_SERVICE_LOGIN,
-            password: process.env.SUPPLIERS_DATA_SERVICE_PASSWORD,
+            login: this.suppliersDataServiceLogin,
+            password: this.suppliersDataServicePassword,
           },
         },
       );
@@ -57,12 +86,12 @@ export class SuppliersService {
       }
 
       const response = await axios.post(
-        `${process.env.CERTIFICATE_DATA_SERVICE_URL}api/certificate/`,
+        `${this.certificateDataServiceUrl}api/certificate/`,
         form,
         {
           headers: {
-            login: process.env.CERTIFICATE_DATA_SERVICE_LOGIN,
-            password: process.env.CERTIFICATE_DATA_SERVICE_PASSWORD,
+            login: this.certificateDataServiceLogin,
+            password: this.certificateDataServicePassword,
             ...form.getHeaders(),
           },
         },
@@ -82,22 +111,22 @@ export class SuppliersService {
   async getSupplier(data: GetSupplierDto): Promise<any> {
     try {
       const suppRes = await axios.get(
-        `${process.env.SUPPLIERS_DATA_SERVICE_URL}suppliers/${data.id}`,
+        `${this.suppliersDataServiceUrl}suppliers/${data.id}`,
         {
           headers: {
-            login: process.env.SUPPLIERS_DATA_SERVICE_LOGIN,
-            password: process.env.SUPPLIERS_DATA_SERVICE_PASSWORD,
+            login: this.suppliersDataServiceLogin,
+            password: this.suppliersDataServicePassword,
           },
         },
       );
       const supplier = suppRes.data;
 
       const certRes = await axios.get(
-        `${process.env.CERTIFICATE_DATA_SERVICE_URL}api/certificate/getAllNames?supplierId=${data.id}`,
+        `${this.certificateDataServiceUrl}api/certificate/getAllNames?supplierId=${data.id}`,
         {
           headers: {
-            login: process.env.CERTIFICATE_DATA_SERVICE_LOGIN,
-            password: process.env.CERTIFICATE_DATA_SERVICE_PASSWORD,
+            login: this.certificateDataServiceLogin,
+            password: this.certificateDataServicePassword,
           },
         },
       );
@@ -113,14 +142,18 @@ export class SuppliersService {
   }
 
   async getSuppliers() {
+    const certificateDataServiceUrl = this.certificateDataServiceUrl;
+    const certificateDataServiceLogin = this.certificateDataServiceLogin;
+    const certificateDataServicePassword = this.certificateDataServicePassword;
+
     async function getSuppliersWithCertificates(suppliers) {
       const promises = suppliers.map(async (supplier) => {
         const certificates = await axios.get(
-          `${process.env.CERTIFICATE_DATA_SERVICE_URL}api/certificate/getAllNames?supplierId=${supplier.id}`,
+          `${certificateDataServiceUrl}api/certificate/getAllNames?supplierId=${supplier.id}`,
           {
             headers: {
-              login: process.env.CERTIFICATE_DATA_SERVICE_LOGIN,
-              password: process.env.CERTIFICATE_DATA_SERVICE_PASSWORD,
+              login: certificateDataServiceLogin,
+              password: certificateDataServicePassword,
             },
           },
         );
@@ -128,7 +161,7 @@ export class SuppliersService {
           certificates: JSON.parse(certificates.data).map((certificate) => {
             return {
               fileName: certificate.fileName,
-              fileId: `${process.env.CERTIFICATE_DATA_SERVICE_URL}api/certificate/${certificate.fileId}`,
+              fileId: `${certificateDataServiceUrl}api/certificate/${certificate.fileId}`,
             };
           }),
           ...supplier,
@@ -139,11 +172,11 @@ export class SuppliersService {
 
     try {
       const response = await axios.get(
-        `${process.env.SUPPLIERS_DATA_SERVICE_URL}suppliers/`,
+        `${this.suppliersDataServiceUrl}suppliers/`,
         {
           headers: {
-            login: process.env.SUPPLIERS_DATA_SERVICE_LOGIN,
-            password: process.env.SUPPLIERS_DATA_SERVICE_PASSWORD,
+            login: this.suppliersDataServiceLogin,
+            password: this.suppliersDataServicePassword,
           },
         },
       );
@@ -169,12 +202,12 @@ export class SuppliersService {
   async deleteSupplier(data: DeleteSupplierDto): Promise<Result> {
     try {
       await axios.delete(
-        `${process.env.SUPPLIERS_DATA_SERVICE_URL}suppliers/${data.id}`,
+        `${this.suppliersDataServiceUrl}suppliers/${data.id}`,
         {
           headers: {
             traceId: uuidv4(),
-            login: process.env.SUPPLIERS_DATA_SERVICE_LOGIN,
-            password: process.env.SUPPLIERS_DATA_SERVICE_PASSWORD,
+            login: this.suppliersDataServiceLogin,
+            password: this.suppliersDataServicePassword,
           },
         },
       );
@@ -190,7 +223,7 @@ export class SuppliersService {
   async updateSupplier(data: UpdateSupplierDto) {
     try {
       await axios.patch(
-        `${process.env.SUPPLIERS_DATA_SERVICE_URL}suppliers`,
+        `${this.suppliersDataServiceUrl}suppliers`,
         {
           id: data.id,
           name: data.name,
@@ -203,8 +236,8 @@ export class SuppliersService {
         {
           headers: {
             traceId: uuidv4(),
-            login: process.env.SUPPLIERS_DATA_SERVICE_LOGIN,
-            password: process.env.SUPPLIERS_DATA_SERVICE_PASSWORD,
+            login: this.suppliersDataServiceLogin,
+            password: this.suppliersDataServicePassword,
           },
         },
       );

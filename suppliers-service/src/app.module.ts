@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
     SuppliersModule,
     ConfigModule.forRoot({
       envFilePath: '.env',
+      isGlobal: true,
     }),
   ],
 })

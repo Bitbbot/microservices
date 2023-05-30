@@ -13,7 +13,6 @@ import { ClientKafka } from '@nestjs/microservices';
 export class UpdateSupplierInterceptor implements NestInterceptor {
   constructor(@Inject('CERT_SERVICE') private client: ClientKafka) {}
 
-  //send a message to kafka to delete saved certificates
   handleError(context: ExecutionContext) {
     const httpContext = context.switchToHttp();
     const request = httpContext.getRequest();
