@@ -8,7 +8,7 @@ export class Supplier extends AggregateRoot {
     private readonly id: string,
     private readonly name: string,
     private readonly country: string,
-    private readonly vatNumber: number | undefined,
+    private readonly vatNumber: number,
     private readonly roles: string[] | undefined,
     private readonly sectors: string[] | undefined,
     private readonly traceId: string,

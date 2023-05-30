@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Supplier } from '../entities/queries/supplier.entity';
 import { Role } from '../entities/queries/role.entity';
 import { Sector } from '../entities/queries/sector.entity';
+import { mapFindOneToModel, mapSaveToModel } from './model.mappers';
 
 @Injectable()
 export class SupplierRepository {
@@ -24,35 +25,25 @@ export class SupplierRepository {
     const supplier = await this.supplierRepo.findOne({
       where: { id },
     });
-    if (supplier)
-      return {
-        id: supplier.id,
-        vatNumber: supplier.vatNumber,
-        name: supplier.name,
-        country: supplier.country,
-        sectors: supplier.sectors.map((sector) => sector.sector),
-        roles: supplier.roles.map((role) => role.role),
-      };
+    if (supplier) return mapFindOneToModel(supplier);
   }
 
   async save(
     id: string,
     name: string,
     country: string,
-    vatNumber: number | undefined,
+    vatNumber: number,
     roles: string[] | undefined,
     sectors: string[] | undefined,
   ): Promise<unknown> {
-    const newSupplier = this.supplierRepo.create({
+    const newSupplier = mapSaveToModel(
       id,
       name,
       country,
       vatNumber,
-      sectors: sectors
-        ? sectors.map((sector) => this.sectorRepo.create({ sector }))
-        : [],
-      roles: roles ? roles.map((role) => this.roleRepo.create({ role })) : [],
-    });
+      roles,
+      sectors,
+    );
 
     return this.supplierRepo.save(newSupplier);
   }

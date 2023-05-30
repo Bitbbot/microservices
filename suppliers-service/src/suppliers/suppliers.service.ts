@@ -8,6 +8,10 @@ import { DeleteSupplierDto } from './dto/delete-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { Result } from './interfaces/result.interface';
 import { ConfigService } from '@nestjs/config';
+import {
+  mapCreateSupplierDtoToData,
+  mapUpdateSupplierDtoToData,
+} from './data.mappers';
 
 @Injectable()
 export class SuppliersService {
@@ -41,16 +45,11 @@ export class SuppliersService {
 
   async createSupplier(data: CreateSupplierDto): Promise<Result> {
     try {
+      const mappedData = mapCreateSupplierDtoToData(data);
+
       const response = await axios.post(
         `${this.suppliersDataServiceUrl}suppliers`,
-        {
-          id: data.id,
-          name: data.name,
-          country: data.country,
-          vatNumber: String(data.vatNumber),
-          roles: data.roles,
-          sectors: data.sectors,
-        },
+        mappedData,
         {
           headers: {
             traceId: uuidv4(),
@@ -222,17 +221,11 @@ export class SuppliersService {
 
   async updateSupplier(data: UpdateSupplierDto) {
     try {
+      const mappedData = mapUpdateSupplierDtoToData(data);
+
       await axios.patch(
         `${this.suppliersDataServiceUrl}suppliers`,
-        {
-          id: data.id,
-          name: data.name,
-          country: data.country,
-          vatNumber: String(data.vatNumber),
-          roles: data.roles,
-          sectors: data.sectors,
-          deleteFiles: data.deleteCertificates,
-        },
+        mappedData,
         {
           headers: {
             traceId: uuidv4(),
